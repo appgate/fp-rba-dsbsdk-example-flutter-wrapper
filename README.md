@@ -6,12 +6,9 @@
 
 # DSB-SDK: Flutter Integration
 
-## Table Of Contents
+## Table of contents
 
 <!-- TOC -->
-* [DSB Library](#dsb-library)
-* [DSB-SDK: Flutter Integration](#dsb-sdk--flutter-integration)
-  * [Table Of Contents](#table-of-contents)
 * [Disclaimer](#disclaimer)
 * [Description](#description)
 * [DSB-SDK Integration](#dsb-sdk-integration)
