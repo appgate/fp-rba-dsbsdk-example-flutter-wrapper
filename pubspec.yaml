@@ -1,0 +1,27 @@
+name: dsbsdk
+description: Example of React Native Wrapper for DSB SDK.
+version: 1.0.0
+homepage:
+
+environment:
+  sdk: ">=2.17.0 <3.0.0"
+  flutter: ">=1.2.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  plugin_platform_interface: ^2.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.appgate.dsbsdk
+        pluginClass: DsbsdkPlugin
+      ios:
+        pluginClass: DsbsdkPlugin
