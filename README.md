@@ -13,7 +13,7 @@
 * [Description](#description)
 * [DSB-SDK Integration](#dsb-sdk-integration)
   * [Preliminary Steps](#preliminary-steps)
-  * [Softwar versions used to develop the library](#softwar-versions-used-to-develop-the-library)
+  * [Software versions used to develop the library](#software-versions-used-to-develop-the-library)
     * [Flutter](#flutter)
     * [Android Studio](#android-studio)
     * [Xcode](#xcode)
@@ -134,7 +134,7 @@ export PATH="$PATH:`pwd`/your/path/to/flutter-sdk/bin"
 
 Run `flutter doctor` and check that you have installed evertything.
 
-## Softwar versions used to develop the library
+## Software versions used to develop the library
 
 ### Flutter 
 Flutter 3.7.7
