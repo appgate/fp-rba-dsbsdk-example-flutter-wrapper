@@ -68,13 +68,28 @@
       * [Response](#response-10)
       * [Error Table](#error-table-3)
       * [Example](#example-10)
+  * [Smishing Protector API - Android only](#smishing-protector-api---android-only)
+    * [Previous configurations](#previous-configurations)
+    * [Get Missing Permissions](#getmissingpermissions)
+      * [Response](#response-11)
+    * [Request SMS Permissions](#requestsmspermissions)
+      * [Response](#response-12)
+      * [Error Table](#error-table-4)
+      * [Example](#example-11)
+    * [Start Message Monitoring](#startmessagemonitoring)
+      * [Parameters](#parameters-2)
+      * [Error Table](#error-table-5)
+      * [Example](#example-12)
+    * [Listen to Smishing Attacks](#listen-to-smishing-attacks)
+      * [Example](#example-13)
   * [Malware Protector API - Only Android](#malware-protector-api---only-android)
     * [Additional configurations](#additional-configurations-1)
-    * [startOverlappingProtection](#startoverlappingprotection)
-      * [Response](#response-11)
-      * [Example](#example-11)
+    * [Start Overlapping Protection](#startoverlappingprotection)
+      * [Response](#response-13)
+      * [Error Table](#error-table-6)
+      * [Example](#example-14)
     * [setOverlayListener](#setoverlaylistener)
-      * [Example](#example-12)
+      * [Example](#example-15)
 <!-- TOC -->
 
 # Disclaimer
@@ -272,7 +287,7 @@ Errors only on Android
 | 110  | MessageMonitoringBroadcastNotFound |
 | 111  | MessageMonitoringException         |
 | 112  | MessageReceivedBroadcastNotFound   |
-| 113  | MissingManifestPermission          |
+| 113  | MissingManifestPermissions         |
 | 114  | ParseMessageIntentError            |
 | 115  | UserDeniedPermissions              |
 
@@ -603,7 +618,7 @@ Errors only on Android
 | 110  | MessageMonitoringBroadcastNotFound |
 | 111  | MessageMonitoringException         |
 | 112  | MessageReceivedBroadcastNotFound   |
-| 113  | MissingManifestPermission          |
+| 113  | MissingManifestPermissions         |
 | 114  | ParseMessageIntentError            |
 | 115  | UserDeniedPermissions              |
 
@@ -627,6 +642,196 @@ Dsbsdk.getConnectionProtectorAPI()
     print(errorDescription);
 });
 ```
+
+## Smishing Protector API - Android only
+
+Smishing is a method used to spread phishing websites in mobile devices through SMS and MMS. For this attack, cybercriminals massively send malicious messages posing as financial institutions, which is a common practice in the industry. Taking advantage of users’ tendency to trust their mobile devices and the strong usage of the SMS channel, fraudsters make use of social engineering to deceive users into clicking the malicious link included in the message, which ultimately aims to obtain users’ sensitive information.
+
+### Previous configurations
+
+To successfully integrate this feature, the following changes must be applied in the Android Manifest:
+
+```xml
+<uses-feature android:name="android.hardware.telephony" android:required="false" />
+<uses-feature android:name="android.hardware.wifi" android:required="false" />
+
+<uses-permission android:name="android.permission.READ_SMS" />
+<uses-permission android:name="android.permission.RECEIVE_SMS" />
+<uses-permission android:name="android.permission.RECEIVE_MMS" />
+```
+
+To receive the incoming messages add the following broadcasts receivers:
+
+```xml
+<application>
+...
+<receiver
+  android:name="net.easysol.dsb.sms_protector.SMSProtectorBroadcast"
+  android:exported="true" >
+  <intent-filter android:priority="999">
+    <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+  </intent-filter>
+</receiver>
+
+<receiver
+  android:name="net.easysol.dsb.sms_protector.MMSProtectorBroadcast"
+  android:enabled="true" android:permission="android.permission.BROADCAST_WAP_PUSH"
+  android:exported="true" >
+  <intent-filter>
+    <action android:name="android.provider.Telephony.WAP_PUSH_RECEIVED" />
+    <data android:mimeType="application/vnd.wap.mms-message" />
+    </intent-filter>
+</receiver>
+...
+</application>
+```
+
+### getMissingPermissions
+
+Call `getMissingPermissions` method after calling `requestSMSPermissions` to obtain the permissions that the user has denied.
+
+#### Response
+
+```dart
+List<String> getMissingPermissions()
+```
+
+### requestSMSPermissions
+
+Call `requestSMSPermissions` method to request permissions to read SMS and MMS messages and `getMissingPermissions` method to obtain the permissions that the user has denied.
+
+#### Response
+
+```dart
+Future<void> requestSMSPermissions()
+```
+Any error code will be sent in the `catch` block as a `AppgateSDKError` object.
+
+#### Error Table
+These errors are encapsulated by code in the table below:
+
+| Code | Error                              |
+|------|------------------------------------|
+| 113  | MissingManifestPermissions         |
+| 115  | UserDeniedPermissions              |
+
+#### Example
+
+```dart
+import 'package:dsbsdk/dsbsdk.dart';
+import 'package:dsbsdk/common/AppgateSDKError.dart';
+import 'package:dsbsdk/common/SDKErrors.dart';
+
+Dsbsdk.getSMSProtectorAPI().requestSMSPermissions()
+.then((_) {
+  // User has accepted the permissions.
+})
+.catchError((error) {
+  if(error is AppgateSDKError) {
+    switch(error.code) {
+      case SDKErrors.userDeniedPermissions:
+        final missingPermissions = Dsbsdk.getSMSProtectorAPI().getMissingPermissions();
+        if(missingPermissions.isNotEmpty) {
+          // Handle error.
+        }
+        break;
+      case SDKErrors.missingManifestPermissions:
+        // Handle error.
+        break;
+    }
+  }
+});
+```
+
+### startMessageMonitoring
+
+DSB Mobile continually monitors incoming messages. When you call this method, the SDK will begin analyzing received messages, specifically looking for URLs that are reported as phishing attempts.
+
+After initializing the SDK and obtaining the necessary permissions to access SMS and MMS, you can use this method to activate Smishing detection. This method can be called with or without specifying the class name for monitoring Smishing attacks.
+
+#### Parameters
+
+* String YOUR_PACKAGE. (optional)
+* String FULL_PATH_TO_CLASS_NAME. (optional)
+
+```dart
+Future<void>
+```
+
+#### Error Table
+These errors are encapsulated by code in the table below:
+
+| Code | Error                              |
+|------|------------------------------------|
+| 110  | MessageMonitoringBroadcastNotFound |
+| 111  | MessageMonitoringException         |
+| 112  | MessageReceivedBroadcastNotFound   |
+| 113  | MissingManifestPermissions         |
+
+#### Example
+
+```dart
+import 'package:dsbsdk/dsbsdk.dart';
+import 'package:dsbsdk/common/AppgateSDKError.dart';
+
+// Using without a Broadcast Receiver
+Dsbsdk.getSMSProtectorAPI().startMessageMonitoring()
+.then((_) {})
+.catchError((_) {})
+
+// Registering a custom Broadcast Receiver
+Dsbsdk.getSMSProtectorAPI().startMessageMonitoring("YOUR_PACKAGE", "FULL_PATH_TO_CLASS_NAME")
+.then((_) {
+})
+.catchError((error) {
+  if(error is AppgateSDKError) {
+    // Handle error
+  }
+})
+```
+
+### Listen to Smishing Attacks
+
+The SDK will autonomously detect smishing attacks and report them. If you want to listen to the attack reports using a Broadcast listener, you can call the `startMessageMonitoring(String, String)` method, specifying the name of the class that will handle the events. (.i.e. For this example the class name is `"PROTECTOR"`)
+
+#### Example
+
+Create a class in the Application project that inherits from `ProtectorReceiver`:
+
+```kotlin
+import android.content.Context
+import com.appgate.dsbsdk.broadcast.ProtectorReceiver
+import net.easysol.dsb.sms_protector.entities.MessageReceived
+
+class PROTECTOR : ProtectorReceiver() {
+
+  override fun onMessageReceived(context: Context, message: MessageReceived) {
+    var urls: List<Array<String>> = message.getMaliciousURLs()
+    var urlMessage: String = urls.joinToString("\n") { it ->
+      "URL original: ${it[0]} - expanded: ${it[1]}"
+    }
+    // Handle event.
+  }
+
+}
+```
+
+And register the Receiver in the Android Manifiest with the following `<intent-filter>`:
+
+```xml
+<application>
+...
+<receiver
+  android:name="your.package.name.PROTECTOR"
+  android:exported="false">
+  <intent-filter>
+    <action android:name="net.easysol.MESSAGES_PROTECTOR" />
+  </intent-filter>
+</receiver>
+...
+</application>
+```
+
 ## Malware Protector API - Android only
 
 ### Additional configurations

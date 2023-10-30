@@ -13,13 +13,14 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
+import io.flutter.plugin.common.PluginRegistry
 import net.easysol.dsb.DSB
 import net.easysol.dsb.application.exceptions.DSBException
 import net.easysol.dsb.licensing.InitializationResultHandler
 
 
 /** DsbsdkPlugin */
-class DsbsdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
+class DsbsdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener {
 
     private var context: Context? = null
     private var application: Application? = null
@@ -33,6 +34,12 @@ class DsbsdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private lateinit var deviceProtectorChannel: MethodChannel
     private lateinit var connectionProtectorChannel: MethodChannel
     private lateinit var malwareProtectorChannel: MethodChannel
+    private lateinit var smsProtectorChannel: MethodChannel
+
+    private lateinit var deviceProtector: DeviceProtectorPlugin
+    private lateinit var connectionProtector: ConnectorApiPlugin
+    private lateinit var malwareProtector: MalwareProtectorPlugin
+    private lateinit var smsProtector: SMSProtectorApiPlugin
 
     private fun initDSB() {
         this.sdk = DSB.sdk(context)
@@ -50,6 +57,13 @@ class DsbsdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         this.context = activity.activity
         this.application = activity.activity.application
         this.initDSB()
+        // Set permissions listener
+        activity.addRequestPermissionsResultListener(this)
+        // Init APIs
+        deviceProtector = DeviceProtectorPlugin(context)
+        connectionProtector = ConnectorApiPlugin(context)
+        malwareProtector = MalwareProtectorPlugin(application)
+        smsProtector = SMSProtectorApiPlugin(application, activity)
     }
 
     override fun onDetachedFromActivity() {}
@@ -67,13 +81,12 @@ class DsbsdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         malwareProtectorChannel =
             MethodChannel(flutterPluginBinding.binaryMessenger, MALWARE_PROTECTOR_MODULE.value)
         malwareProtectorChannel.setMethodCallHandler(this)
-
+        smsProtectorChannel =
+            MethodChannel(flutterPluginBinding.binaryMessenger, SMS_PROTECTOR_MODULE.value)
+        smsProtectorChannel.setMethodCallHandler(this)
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        val deviceProtectorPlugin = DeviceProtectorPlugin(context)
-        val connectorApiPlugin = ConnectorApiPlugin(context)
-        val malwareProtectorPlugin = MalwareProtectorPlugin(application)
         when (call.method) {
             INIT_WITH_LICENSE.value ->
                 initWithLicense(call, result)
@@ -82,34 +95,38 @@ class DsbsdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             SEND_LOGIN_DATA.value ->
                 sendLoginData(call)
             IS_DEVICE_ROOTED.value ->
-                deviceProtectorPlugin.isDeviceRooted(result)
+                deviceProtector.isDeviceRooted(result)
             IS_DEVICE_ON_INSECURE_NETWORK.value ->
-                deviceProtectorPlugin.isDeviceOnInsecureNetwork(result)
+                deviceProtector.isDeviceOnInsecureNetwork(result)
             IS_DEVICE_HOSTS_FILE_INFECTED.value ->
-                deviceProtectorPlugin.isDeviceHostsFileInfected(result)
+                deviceProtector.isDeviceHostsFileInfected(result)
             GET_DEVICE_HOSTS_FILE_INFECTIONS.value ->
-                deviceProtectorPlugin.getDeviceHostsFileInfections(result)
+                deviceProtector.getDeviceHostsFileInfections(result)
             RESTORE_DEVICE_HOSTS.value ->
-                deviceProtectorPlugin.restoreDeviceHosts(result)
+                deviceProtector.restoreDeviceHosts(result)
             IS_SECURE_BY_RISK_RULES.value ->
-                connectorApiPlugin.isSecureByRiskRules(result)
+                connectionProtector.isSecureCertificate(result)
             GET_RISK_RULES_STATUS.value ->
-                connectorApiPlugin.getRiskRulesStatus(result)
+                connectionProtector.getRiskRulesStatus(result)
             IS_SECURE_CERTIFICATE.value ->
-                connectorApiPlugin.isSecureCertificate(call, result)
+                connectionProtector.isSecureCertificate(call, result)
             START_OVERLAPPING_PROTECTION.value ->
-                malwareProtectorPlugin.startOverlappingProtection(result)
+                malwareProtector.startOverlappingProtection(result)
             CONFIGURE_OVERLAPPING_MALWARE_GUI_NOTIFICATION.value ->
-                malwareProtectorPlugin.configureOverlappingMalwareGUINotification(call, result)
-            SET_OVERLAY_LISTENER.value -> malwareProtectorPlugin.setOverlayListener(
+                malwareProtector.configureOverlappingMalwareGUINotification(call, result)
+            SET_OVERLAY_LISTENER.value -> malwareProtector.setOverlayListener(
                 malwareProtectorChannel
             )
             SET_OVERLAY_GUI_NOTIFICATION_ENABLE.value ->
-                malwareProtectorPlugin.setOverlayGUINotificationEnable(call, result)
+                malwareProtector.setOverlayGUINotificationEnable(call, result)
             SET_OVERLAY_TOAST_NOTIFICATION_ENABLE.value ->
-                malwareProtectorPlugin.setOverlayToastNotificationEnable(call, result)
+                malwareProtector.setOverlayToastNotificationEnable(call, result)
             CONFIGURE_OVERLAPPING_MALWARE_TOAST_NOTIFICATION.value ->
-                malwareProtectorPlugin.configureOverlappingMalwareToastNotification(call, result)
+                malwareProtector.configureOverlappingMalwareToastNotification(call, result)
+            REQUEST_SMS_PERMISSIONS.value ->
+                smsProtector.requestPermissions(call, result)
+            START_MESSAGE_MONITORING.value ->
+                smsProtector.startMessageMonitoring(call, result)
         }
     }
 
@@ -164,5 +181,13 @@ class DsbsdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         private const val DOMAIN: String = "domain"
         private const val LICENCE: String = "licence"
         private const val DATA: String = "data"
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray): Boolean {
+        if (requestCode == SMSProtectorApiPlugin.REQUEST_CODE_DSB_PERMISSION) {
+            smsProtector.onRequestPermissionsResult(permissions, grantResults)
+            return true
+        }
+        return false
     }
 }

@@ -18,4 +18,6 @@ enum class DSBModulesNames(val value: String) {
     SET_OVERLAY_GUI_NOTIFICATION_ENABLE ("setOverlayGUINotificationEnable"),
     SET_OVERLAY_TOAST_NOTIFICATION_ENABLE ("setOverlayToastNotificationEnable"),
     CONFIGURE_OVERLAPPING_MALWARE_TOAST_NOTIFICATION ("configureOverlappingMalwareToastNotification"),
+    REQUEST_SMS_PERMISSIONS ("requestSMSPermissions"),
+    START_MESSAGE_MONITORING ("startMessageMonitoring"),
 }

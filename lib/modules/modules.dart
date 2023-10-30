@@ -15,3 +15,4 @@ part "ConnectionProtectorAPI.dart";
 part "DSBModule.dart";
 part "DeviceProtectorAPI.dart";
 part "MalwareProtectorAPI.dart";
+part "SMSProtectorAPI.dart";

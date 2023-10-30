@@ -17,4 +17,6 @@ enum MethodNames {
   setOverlayGUINotificationEnable,
   setOverlayToastNotificationEnable,
   configureOverlappingMalwareToastNotification,
+  requestSMSPermissions,
+  startMessageMonitoring,
 }

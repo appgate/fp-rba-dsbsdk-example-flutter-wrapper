@@ -9,12 +9,14 @@ class Dsbsdk {
   late DeviceProtectorAPI _deviceProtector;
   late ConnectionProtectorAPI _connectionProtector;
   late MalwareProtectorAPI _malwareProtectorAPI;
+  late SMSProtectorAPI _smsProtectorAPI;
 
   Dsbsdk._channelName(String prefix) {
     _dsbModule = DSBModule(MethodChannel(prefix));
     _deviceProtector = DeviceProtectorAPI(MethodChannel("${prefix}_device_protector"));
     _connectionProtector = ConnectionProtectorAPI(MethodChannel("${prefix}_connection_protector"));
     _malwareProtectorAPI = MalwareProtectorAPI(MethodChannel("${prefix}_malware_protector"));
+    _smsProtectorAPI = SMSProtectorAPI(MethodChannel("${prefix}_sms_protector"));
   }
 
   static Future<void> initWithLicense(String licence, [String? domain]) {
@@ -32,5 +34,5 @@ class Dsbsdk {
   static DeviceProtectorAPI getDeviceProtectorAPI() => _instance._deviceProtector;
   static ConnectionProtectorAPI getConnectionProtectorAPI() => _instance._connectionProtector;
   static MalwareProtectorAPI getMalwareProtectorAPI() => _instance._malwareProtectorAPI;
-
+  static SMSProtectorAPI getSMSProtectorAPI() => _instance._smsProtectorAPI;
 }

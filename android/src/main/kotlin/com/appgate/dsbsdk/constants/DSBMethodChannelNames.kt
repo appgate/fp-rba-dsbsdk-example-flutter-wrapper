@@ -4,5 +4,6 @@ enum class DSBMethodChannelNames(val value: String) {
     DSB_SDK("dsbsdk"),
     DEVICE_PROTECTOR_MODULE("dsbsdk_device_protector"),
     CONNECTION_PROTECTOR_MODULE("dsbsdk_connection_protector"),
-    MALWARE_PROTECTOR_MODULE("dsbsdk_malware_protector")
+    MALWARE_PROTECTOR_MODULE("dsbsdk_malware_protector"),
+    SMS_PROTECTOR_MODULE("dsbsdk_sms_protector")
 }
