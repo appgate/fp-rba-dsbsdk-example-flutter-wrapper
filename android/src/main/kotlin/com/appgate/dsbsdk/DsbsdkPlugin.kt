@@ -4,8 +4,30 @@ import android.app.Application
 import android.content.Context
 import android.text.TextUtils
 import android.util.Log
-import com.appgate.dsbsdk.constants.DSBMethodChannelNames.*
-import com.appgate.dsbsdk.constants.DSBModulesNames.*
+import com.appgate.dsbsdk.constants.DSBMethodChannelNames.CONNECTION_PROTECTOR_MODULE
+import com.appgate.dsbsdk.constants.DSBMethodChannelNames.DEVICE_PROTECTOR_MODULE
+import com.appgate.dsbsdk.constants.DSBMethodChannelNames.DSB_SDK
+import com.appgate.dsbsdk.constants.DSBMethodChannelNames.MALWARE_PROTECTOR_MODULE
+import com.appgate.dsbsdk.constants.DSBMethodChannelNames.SMS_PROTECTOR_MODULE
+import com.appgate.dsbsdk.constants.DSBModulesNames.CONFIGURE_OVERLAPPING_MALWARE_GUI_NOTIFICATION
+import com.appgate.dsbsdk.constants.DSBModulesNames.CONFIGURE_OVERLAPPING_MALWARE_TOAST_NOTIFICATION
+import com.appgate.dsbsdk.constants.DSBModulesNames.GET_DEVICE_HOSTS_FILE_INFECTIONS
+import com.appgate.dsbsdk.constants.DSBModulesNames.GET_DEVICE_ID
+import com.appgate.dsbsdk.constants.DSBModulesNames.GET_RISK_RULES_STATUS
+import com.appgate.dsbsdk.constants.DSBModulesNames.INIT_WITH_LICENSE
+import com.appgate.dsbsdk.constants.DSBModulesNames.IS_DEVICE_HOSTS_FILE_INFECTED
+import com.appgate.dsbsdk.constants.DSBModulesNames.IS_DEVICE_ON_INSECURE_NETWORK
+import com.appgate.dsbsdk.constants.DSBModulesNames.IS_DEVICE_ROOTED
+import com.appgate.dsbsdk.constants.DSBModulesNames.IS_SECURE_BY_RISK_RULES
+import com.appgate.dsbsdk.constants.DSBModulesNames.IS_SECURE_CERTIFICATE
+import com.appgate.dsbsdk.constants.DSBModulesNames.REQUEST_SMS_PERMISSIONS
+import com.appgate.dsbsdk.constants.DSBModulesNames.RESTORE_DEVICE_HOSTS
+import com.appgate.dsbsdk.constants.DSBModulesNames.SEND_LOGIN_DATA
+import com.appgate.dsbsdk.constants.DSBModulesNames.SET_OVERLAY_GUI_NOTIFICATION_ENABLE
+import com.appgate.dsbsdk.constants.DSBModulesNames.SET_OVERLAY_LISTENER
+import com.appgate.dsbsdk.constants.DSBModulesNames.SET_OVERLAY_TOAST_NOTIFICATION_ENABLE
+import com.appgate.dsbsdk.constants.DSBModulesNames.START_MESSAGE_MONITORING
+import com.appgate.dsbsdk.constants.DSBModulesNames.START_OVERLAPPING_PROTECTION
 import com.appgate.dsbsdk.util.DSBExceptionNumber.Companion.number
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -20,7 +42,8 @@ import net.easysol.dsb.licensing.InitializationResultHandler
 
 
 /** DsbsdkPlugin */
-class DsbsdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener {
+class DsbsdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
+    PluginRegistry.RequestPermissionsResultListener {
 
     private var context: Context? = null
     private var application: Application? = null
@@ -41,22 +64,10 @@ class DsbsdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegi
     private lateinit var malwareProtector: MalwareProtectorPlugin
     private lateinit var smsProtector: SMSProtectorApiPlugin
 
-    private fun initDSB() {
+    private fun initSDK(activity: ActivityPluginBinding) {
+        this.context = activity.activity
+        this.application = activity.activity.application
         this.sdk = DSB.sdk(context)
-    }
-
-    /* ActivityAware */
-
-    override fun onAttachedToActivity(activity: ActivityPluginBinding) {
-        this.context = activity.activity
-        this.application = activity.activity.application
-        this.initDSB()
-    }
-
-    override fun onReattachedToActivityForConfigChanges(activity: ActivityPluginBinding) {
-        this.context = activity.activity
-        this.application = activity.activity.application
-        this.initDSB()
         // Set permissions listener
         activity.addRequestPermissionsResultListener(this)
         // Init APIs
@@ -64,6 +75,16 @@ class DsbsdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegi
         connectionProtector = ConnectorApiPlugin(context)
         malwareProtector = MalwareProtectorPlugin(application)
         smsProtector = SMSProtectorApiPlugin(application, activity)
+    }
+
+    /* ActivityAware */
+
+    override fun onAttachedToActivity(activity: ActivityPluginBinding) {
+        initSDK(activity)
+    }
+
+    override fun onReattachedToActivityForConfigChanges(activity: ActivityPluginBinding) {
+        initSDK(activity)
     }
 
     override fun onDetachedFromActivity() {}
@@ -90,41 +111,59 @@ class DsbsdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegi
         when (call.method) {
             INIT_WITH_LICENSE.value ->
                 initWithLicense(call, result)
+
             GET_DEVICE_ID.value ->
                 getDeviceID(result)
+
             SEND_LOGIN_DATA.value ->
                 sendLoginData(call)
+
             IS_DEVICE_ROOTED.value ->
                 deviceProtector.isDeviceRooted(result)
+
             IS_DEVICE_ON_INSECURE_NETWORK.value ->
                 deviceProtector.isDeviceOnInsecureNetwork(result)
+
             IS_DEVICE_HOSTS_FILE_INFECTED.value ->
                 deviceProtector.isDeviceHostsFileInfected(result)
+
             GET_DEVICE_HOSTS_FILE_INFECTIONS.value ->
                 deviceProtector.getDeviceHostsFileInfections(result)
+
             RESTORE_DEVICE_HOSTS.value ->
                 deviceProtector.restoreDeviceHosts(result)
+
             IS_SECURE_BY_RISK_RULES.value ->
-                connectionProtector.isSecureCertificate(result)
+                connectionProtector.isSecureByRiskRules(result)
+
             GET_RISK_RULES_STATUS.value ->
                 connectionProtector.getRiskRulesStatus(result)
+
             IS_SECURE_CERTIFICATE.value ->
                 connectionProtector.isSecureCertificate(call, result)
+
             START_OVERLAPPING_PROTECTION.value ->
                 malwareProtector.startOverlappingProtection(result)
+
             CONFIGURE_OVERLAPPING_MALWARE_GUI_NOTIFICATION.value ->
                 malwareProtector.configureOverlappingMalwareGUINotification(call, result)
+
             SET_OVERLAY_LISTENER.value -> malwareProtector.setOverlayListener(
                 malwareProtectorChannel
             )
+
             SET_OVERLAY_GUI_NOTIFICATION_ENABLE.value ->
                 malwareProtector.setOverlayGUINotificationEnable(call, result)
+
             SET_OVERLAY_TOAST_NOTIFICATION_ENABLE.value ->
                 malwareProtector.setOverlayToastNotificationEnable(call, result)
+
             CONFIGURE_OVERLAPPING_MALWARE_TOAST_NOTIFICATION.value ->
                 malwareProtector.configureOverlappingMalwareToastNotification(call, result)
+
             REQUEST_SMS_PERMISSIONS.value ->
                 smsProtector.requestPermissions(call, result)
+
             START_MESSAGE_MONITORING.value ->
                 smsProtector.startMessageMonitoring(call, result)
         }
@@ -144,7 +183,7 @@ class DsbsdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegi
                 result.error("${exception.number()}", exception.message, exception.localizedMessage)
             }
         }
-        val domain = call.argument<String>(DOMAIN);
+        val domain = call.argument<String>(DOMAIN)
         if (!TextUtils.isEmpty(domain)) {
             this.sdk?.init(call.argument(LICENCE), domain, listener)
         } else {
@@ -160,7 +199,7 @@ class DsbsdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegi
 
     private fun sendLoginData(call: MethodCall) {
         try {
-            val data = call.argument<Map<String, String>?>(DATA);
+            val data = call.argument<Map<String, String>?>(DATA)
             if (data != null) {
                 this.sdk?.sendLoginData(data)
             }
@@ -183,7 +222,11 @@ class DsbsdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegi
         private const val DATA: String = "data"
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray): Boolean {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ): Boolean {
         if (requestCode == SMSProtectorApiPlugin.REQUEST_CODE_DSB_PERMISSION) {
             smsProtector.onRequestPermissionsResult(permissions, grantResults)
             return true

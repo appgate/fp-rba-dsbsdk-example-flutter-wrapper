@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
+import com.appgate.dsbsdk.util.DSBExceptionNumber
 import com.appgate.dsbsdk.util.DSBExceptionNumber.Companion.number
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
@@ -11,7 +12,7 @@ import io.flutter.plugin.common.MethodChannel
 import net.easysol.dsb.DSB
 import net.easysol.dsb.application.exceptions.DSBException
 import net.easysol.dsb.sms_protector.MessageMonitoringResultHandler
-import net.easysol.logging.DSBLogMessages.*
+
 
 
 class SMSProtectorApiPlugin(private val application: Application?, private val activity: ActivityPluginBinding) {
@@ -23,7 +24,7 @@ class SMSProtectorApiPlugin(private val application: Application?, private val a
     private lateinit var permissionsCallback: MethodChannel.Result
 
     fun requestPermissions(call: MethodCall, result: MethodChannel.Result) {
-        permissionsNeeded = ArrayList<String>()
+        permissionsNeeded = ArrayList()
         if (context.checkSelfPermission(Manifest.permission.READ_SMS) !== PackageManager.PERMISSION_GRANTED)
             permissionsNeeded.add(Manifest.permission.READ_SMS)
         if (context.checkSelfPermission(Manifest.permission.RECEIVE_SMS) !== PackageManager.PERMISSION_GRANTED)
@@ -36,7 +37,7 @@ class SMSProtectorApiPlugin(private val application: Application?, private val a
             value.add(true)
             result.success(value)
         } else if(!validatePermissionManifests()) {
-            result.error("113", MISSING_MANIFETS_PERMISSION, null)
+            result.error("113", DSBExceptionNumber.MissingManifestPermission.toString(), null)
         } else {
             activity.getActivity().requestPermissions(permissionsNeeded.toArray(arrayOfNulls<String>(permissionsNeeded.size)), REQUEST_CODE_DSB_PERMISSION)
             permissionsCallback = result
@@ -57,7 +58,8 @@ class SMSProtectorApiPlugin(private val application: Application?, private val a
             value.add(true)
             permissionsCallback.success(value)
         } else {
-            permissionsCallback.error("115", SMS_READ_PERMISSION_DENY, permissionsNeeded)
+            permissionsCallback.error("115",
+                DSBExceptionNumber.UserDeniedPermissions.toString(), permissionsNeeded)
         }
     }
 
@@ -72,7 +74,7 @@ class SMSProtectorApiPlugin(private val application: Application?, private val a
             }
             override fun onFailure(exception: DSBException?) {
                 if(exception != null) {
-                    result.error("${exception!!.number()}", exception!!.message, exception!!.localizedMessage)
+                    result.error("${exception.number()}", exception.message, exception.localizedMessage)
                 } else {
                     result.error("", "", "")
                 }
@@ -86,20 +88,20 @@ class SMSProtectorApiPlugin(private val application: Application?, private val a
     }
 
     private fun validatePermissionManifests(): Boolean {
-        var permissions = ArrayList<String>()
+        val permissions = ArrayList<String>()
         try {
             val packageInfo = context.packageManager.getPackageInfo(
                 context.packageName,
                 PackageManager.GET_PERMISSIONS
             )
-            if (packageInfo != null && packageInfo.requestedPermissions.isNotEmpty()) {
-                for (permission in packageInfo.requestedPermissions) {
+            if (packageInfo != null && packageInfo.requestedPermissions?.isNotEmpty() == true) {
+                for (permission in packageInfo.requestedPermissions!!) {
                     if(permissionsNeeded.contains(permission)) {
                         permissions.add(permission);
                     }
                 }
             }
-        } catch (e: PackageManager.NameNotFoundException) {}
+        } catch (_: PackageManager.NameNotFoundException) {}
         return permissions.size == permissionsNeeded.size;
     }
 

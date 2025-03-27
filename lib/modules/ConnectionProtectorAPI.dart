@@ -12,7 +12,7 @@ class ConnectionProtectorAPI {
         .invokeListMethod(MethodNames.isSecureByRiskRules.name)
         .then((response) {
       if ((response?.isNotEmpty ?? false) && response!.first is bool) {
-        return Future.value(response!.first);
+        return Future.value(response.first);
       }
       return Future.value(false);
     }).catchError((error) => Future.error(AppgateSDKError.toError(error)));
@@ -34,7 +34,7 @@ class ConnectionProtectorAPI {
     return channel.invokeListMethod(MethodNames.isSecureCertificate.name,
         {_ConnectionProtectorConstants.url.name: url}).then((response) {
       if ((response?.isNotEmpty ?? false) && response!.first is bool) {
-        return Future.value(response!.first);
+        return Future.value(response.first);
       }
       return Future.error(SDKErrors.defaultError);
     }).catchError((error) => Future.error(AppgateSDKError.toError(error)));

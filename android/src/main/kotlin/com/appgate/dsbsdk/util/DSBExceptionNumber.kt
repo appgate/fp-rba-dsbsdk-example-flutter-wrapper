@@ -38,7 +38,7 @@ enum class DSBExceptionNumber(val code: Int) {
             if (this is net.easysol.dsb.application.exceptions.MessageReceivedBroadcastNotFound)
                 return MessageReceivedBroadcastNotFound.code
 
-            if (this is net.easysol.dsb.application.exceptions.MissingManifetsPermission)
+            if (this is net.easysol.dsb.application.exceptions.MissingManifestPermission)
                 return MissingManifestPermission.code
 
             if (this is net.easysol.dsb.application.exceptions.UserDeniedPermissions)
