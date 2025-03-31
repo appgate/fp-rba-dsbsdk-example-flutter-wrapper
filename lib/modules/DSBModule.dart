@@ -39,6 +39,5 @@ class DSBModule {
         return Future.error(SDKErrors.defaultError);
       }
     }).catchError((error) => Future.error(AppgateSDKError.toError(error)));
-    ;
   }
 }

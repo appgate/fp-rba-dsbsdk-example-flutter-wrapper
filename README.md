@@ -152,16 +152,21 @@ Run `flutter doctor` and check that you have installed evertything.
 ## Software versions used to develop the library
 
 ### Flutter 
-Flutter 3.7.7
-Tools • Dart 2.19.4 • DevTools 2.20.1
+Flutter 3.29.2
+
+Tools • Dart 3.7.2 • DevTools 2.42.3
 
 ### Android Studio
-Electric Eel | 2022.1.1
-Dart Plugin: 221.6103.1
-Flutter Plugin: 72.1.2
+Android Studio Meerkat | 2024.3.1 Patch 1
+
+Dart Plugin: 243.23654.44
+
+Flutter Plugin: 83.0.4
+
+Java Compile: Java 17
 
 ### Xcode
-14.1
+16.2 
 
 # Set-up the library
 
