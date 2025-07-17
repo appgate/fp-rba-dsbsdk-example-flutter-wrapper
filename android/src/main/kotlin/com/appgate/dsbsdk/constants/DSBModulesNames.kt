@@ -3,6 +3,7 @@ package com.appgate.dsbsdk.constants
 enum class DSBModulesNames(val value: String) {
     INIT_WITH_LICENSE("initWithLicense"),
     GET_DEVICE_ID("getDeviceID"),
+    GET_PACKAGE_NAME("getPackageName"),
     SEND_LOGIN_DATA("sendLoginData"),
     IS_DEVICE_ROOTED("isDeviceRooted"),
     IS_DEVICE_ON_INSECURE_NETWORK("isDeviceOnInsecureNetwork"),

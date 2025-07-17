@@ -2,6 +2,7 @@ enum MethodNames {
   initWithLicense,
   sendLoginData,
   getDeviceID,
+  getPackageName,
   isDeviceRooted,
   deviceHasJailbreak,
   isDeviceOnInsecureNetwork,

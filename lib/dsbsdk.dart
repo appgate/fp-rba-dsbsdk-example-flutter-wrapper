@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dsbsdk/modules/modules.dart';
 import 'package:flutter/services.dart';
 
@@ -25,6 +27,10 @@ class Dsbsdk {
 
   static void sendLoginData(Map<String, String> args) {
     _instance._dsbModule.sendLoginData(args);
+  }
+
+  static Future getPackageName() {
+    return Platform.isAndroid ? _instance._dsbModule.getPackageName() : Future.value("");
   }
 
   static Future getDeviceID() {

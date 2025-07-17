@@ -13,6 +13,7 @@ import com.appgate.dsbsdk.constants.DSBModulesNames.CONFIGURE_OVERLAPPING_MALWAR
 import com.appgate.dsbsdk.constants.DSBModulesNames.CONFIGURE_OVERLAPPING_MALWARE_TOAST_NOTIFICATION
 import com.appgate.dsbsdk.constants.DSBModulesNames.GET_DEVICE_HOSTS_FILE_INFECTIONS
 import com.appgate.dsbsdk.constants.DSBModulesNames.GET_DEVICE_ID
+import com.appgate.dsbsdk.constants.DSBModulesNames.GET_PACKAGE_NAME
 import com.appgate.dsbsdk.constants.DSBModulesNames.GET_RISK_RULES_STATUS
 import com.appgate.dsbsdk.constants.DSBModulesNames.INIT_WITH_LICENSE
 import com.appgate.dsbsdk.constants.DSBModulesNames.IS_DEVICE_HOSTS_FILE_INFECTED
@@ -28,7 +29,6 @@ import com.appgate.dsbsdk.constants.DSBModulesNames.SET_OVERLAY_LISTENER
 import com.appgate.dsbsdk.constants.DSBModulesNames.SET_OVERLAY_TOAST_NOTIFICATION_ENABLE
 import com.appgate.dsbsdk.constants.DSBModulesNames.START_MESSAGE_MONITORING
 import com.appgate.dsbsdk.constants.DSBModulesNames.START_OVERLAPPING_PROTECTION
-import com.appgate.dsbsdk.util.DSBExceptionNumber.Companion.number
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -112,6 +112,9 @@ class DsbsdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             INIT_WITH_LICENSE.value ->
                 initWithLicense(call, result)
 
+            GET_PACKAGE_NAME.value ->
+                getPackageName(result)
+
             GET_DEVICE_ID.value ->
                 getDeviceID(result)
 
@@ -180,7 +183,7 @@ class DsbsdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
 
             override fun onFailure(exception: DSBException) {
                 Log.e(TAG, "onFailure: ", exception)
-                result.error("${exception.number()}", exception.message, exception.localizedMessage)
+                result.error("", exception.message, exception.localizedMessage)
             }
         }
         val domain = call.argument<String>(DOMAIN)
@@ -189,6 +192,13 @@ class DsbsdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         } else {
             this.sdk?.init(call.argument(LICENCE), listener)
         }
+    }
+
+    private fun getPackageName(result: MethodChannel.Result) {
+        val value: MutableList<String> = ArrayList(1)
+        val packageName = context?.applicationContext?.packageName ?: ""
+        value.add(packageName)
+        result.success(value)
     }
 
     private fun getDeviceID(result: MethodChannel.Result) {
