@@ -47,19 +47,29 @@ public class SwiftDsbsdkPlugin: NSObject, FlutterPlugin {
                 result([""])
             }, onFailure: { error in
                 if let `error` = error {
-                    result(FlutterError.init(code: "\(error.code)", message: error.description, details: nil))
+                    DispatchQueue.main.async(execute: {
+                        result(FlutterError.init(code: "\(error.code)", message: error.description, details: nil))
+                    })
                 } else {
-                    result(SDKErrors.defaultError)
+                    DispatchQueue.main.async(execute: {
+                        result(SDKErrors.defaultError)
+                    })
                 }
             })
         } else {
             DSB.sdk().initWithLicense(licence, onSuccess: {
-                result([""])
+                DispatchQueue.main.async(execute: {
+                    result([""])
+                })
             }, onFailure: { error in
                 if let `error` = error {
-                    result(FlutterError.init(code: "\(error.code)", message: error.description, details: nil))
+                    DispatchQueue.main.async(execute: {
+                        result(FlutterError.init(code: "\(error.code)", message: error.description, details: nil))
+                    })
                 } else {
-                    result(SDKErrors.defaultError)
+                    DispatchQueue.main.async(execute: {
+                        result(SDKErrors.defaultError)
+                    })
                 }
             })
         }
