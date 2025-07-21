@@ -210,9 +210,14 @@ Copy the required the `.aar` at the following locations:
 
 in your app go to app/build.gradle and dependencies block add this line
 
-```
+```groovy
 implementation fileTree(include: ['*.aar'], dir: 'libs')
 ```
+
+```kotlin
+implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar"))))
+```
+
 ### Additional configurations
 in the manifest add the permission
 ```xml
