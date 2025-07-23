@@ -11,12 +11,13 @@
 <!-- TOC -->
 * [Disclaimer](#disclaimer)
 * [Description](#description)
+* [Technical Information](#technical-information)
 * [DSB-SDK Integration](#dsb-sdk-integration)
   * [Preliminary Steps](#preliminary-steps)
   * [Software versions used to develop the library](#software-versions-used-to-develop-the-library)
-    * [Flutter](#flutter)
-    * [Android Studio](#android-studio)
-    * [Xcode](#xcode)
+    * [Flutter](#hybrid-environment)
+    * [iOS](#ios)
+    * [Android](#android)
 * [Set-up the library](#set-up-the-library)
   * [iOS](#ios)
     * [Install Cocoapods](#install-cocoapods)
@@ -116,14 +117,21 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-<a name="desc"></a>
-
 # Description
-
 This repository is meant to help you understand the implementation of the native libraries of DSB-SDK using Flutter.
 This repository reviews the initialization of the SDK and the following APIs: DEVICE_PROTECTOR_API, CONNECTION_PROTECTOR_API and MALWARE_PROTECTOR_API services.
 
 Notice that all the methods of the SDK are accessed from the *Dsbsdk* class importing the package `package:dsbsdk/dsbsdk.dart`.
+
+# Technical Information
+The native libraries of DSB-SDK have the following specifications:
+
+## SDK version
+- iOS: 7.1.2
+    - dsb_protector_sdk_iOS.xcframework
+
+- Android: 7.1.6
+    - dsb_protector_sdk_v7.1.6_android_6.0.aar
 
 # DSB-SDK Integration
 
@@ -151,22 +159,25 @@ Run `flutter doctor` and check that you have installed evertything.
 
 ## Software versions used to develop the library
 
-### Flutter 
-Flutter 3.29.2
+### Hybrid environment
 
-Tools • Dart 3.7.2 • DevTools 2.42.3
+- Flutter >= 3.32.5
+- Dart >= 3.8.1
+- DevTools 2.45.1
 
-### Android Studio
-Android Studio Meerkat | 2024.3.1 Patch 1
+### iOS
 
-Dart Plugin: 243.23654.44
+ - Base SDK compiled: iOS 16.4.
+ - Version 16.3 (16E140).
+ - OS versions compatibility: From 12 to 18.
+ - Programing Language: Swift 6.1.
 
-Flutter Plugin: 83.0.4
+## Android
 
-Java Compile: Java 17
-
-### Xcode
-16.2 
+ - API level SDK compiled: 34.
+ - API level version compatibility: From 23 (Android 6 - Marshmallow) to 35 (Android 15).
+ - Programing Language: Kotlin.
+ - Android Studio Narwhal | 2025.1.1
 
 # Set-up the library
 
