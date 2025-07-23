@@ -26,6 +26,7 @@
     * [Copy aar to folders](#copy-aar-to-folders)
     * [Modify build.gradle](#modify-buildgradle)
     * [Additional configurations](#additional-configurations)
+    * [Add Proguard Rules](#add-proguard-rules)
 * [Implementing the DSB package](#implementing-the-dsb-package)
 * [Implementation](#implementation)
     * [Init with licence and domain](#init-with-licence-and-domain)
@@ -244,6 +245,22 @@ The `android.permission.HIGH_SAMPLING_RATE_SENSORS` permission allows an applica
 ```
 
 The `android.permission.INTERNET` permission allows an application to access the internet on the Android device.
+
+### Add Proguard Rules
+
+ProGuard optimizes, shrinks, and obfuscates Android app code. It removes unused classes, methods, and attributes, then shortens names to make reverse engineering harder—especially for apps with sensitive features like license checks. To ensure compatibility with the DetectID is required to add the following rules to `proguard-rules.pro` file.
+
+```
+-dontwarn net.easysol.dsb.**
+-dontwarn org.bouncycastle.easy.**
+-dontwarn net.easysol.logging.**
+-dontwarn com.google.errorprone.annotations.**
+-dontwarn androidx.annotation.**
+
+-keep class net.easysol.dsb.** {*;}
+-keep class net.easysol.logging.** {*;}
+-keep class org.bouncycastle.easy.** {*;}
+```
 
 # Implementing the DSB package
 
