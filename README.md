@@ -145,12 +145,8 @@ On this section, you can review step by step the integration of the SDK and its 
 ## Preliminary Steps
 
 1. Install Android Studio
-2. Install `Dart` and `Flutter` plugins for Android Studio:
-
-![dart_flutter_plugins.png](img/dart_flutter_plugins.png)
-
-3. [Download the Flutter SDK](https://docs.flutter.dev/get-started/install).
-4. Add Flutter to the PATH environment to enable the use of Flutter doctor:
+2. [Download the Flutter SDK](https://docs.flutter.dev/get-started/install).
+3. Add Flutter to the PATH environment to enable the use of Flutter doctor:
 
 ```bash
 export PATH="$PATH:`pwd`/your/path/to/flutter-sdk/bin"
