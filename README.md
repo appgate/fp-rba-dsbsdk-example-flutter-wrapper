@@ -84,7 +84,7 @@
       * [Example](#example-12)
     * [Listen to Smishing Attacks](#listen-to-smishing-attacks)
       * [Example](#example-13)
-  * [Malware Protector API - Only Android](#malware-protector-api---only-android)
+  * [Malware Protector API - Only Android](#malware-protector-api---android-only)
     * [Additional configurations](#additional-configurations-1)
     * [Start Overlapping Protection](#startoverlappingprotection)
       * [Response](#response-13)
@@ -92,6 +92,8 @@
       * [Example](#example-14)
     * [setOverlayListener](#setoverlaylistener)
       * [Example](#example-15)
+  * [Extras](#extras)
+    * [Register a Plugin in Android](#register-a-plugin-in-android)
 <!-- TOC -->
 
 # Disclaimer
@@ -164,7 +166,7 @@ Run `flutter doctor` and check that you have installed evertything.
 
 ### iOS
 
- - Base SDK compiled: iOS 16.4.
+ - Base SDK compiled: iOS 18.4.
  - Version 16.3 (16E140).
  - OS versions compatibility: From 12 to 18.
  - Programing Language: Swift 6.1.
@@ -757,7 +759,7 @@ import 'package:dsbsdk/common/AppgateSDKError.dart';
 import 'package:dsbsdk/common/SDKErrors.dart';
 
 Dsbsdk.getSMSProtectorAPI().requestSMSPermissions()
-.then((_) {
+.then((_) async {
   // User has accepted the permissions.
 })
 .catchError((error) {
@@ -804,6 +806,8 @@ These errors are encapsulated by code in the table below:
 
 #### Example
 
+You will need to know your package name to use this feature. This is visible in the `app/build.gradle` of your application. To view more on how to implement the `getPackageName` method with a Native Plugin go to extra [section](#register-a-plugin-in-android).
+
 ```dart
 import 'package:dsbsdk/dsbsdk.dart';
 import 'package:dsbsdk/common/AppgateSDKError.dart';
@@ -814,7 +818,9 @@ Dsbsdk.getSMSProtectorAPI().startMessageMonitoring()
 .catchError((_) {})
 
 // Registering a custom Broadcast Receiver
-Dsbsdk.getSMSProtectorAPI().startMessageMonitoring("YOUR_PACKAGE", "FULL_PATH_TO_CLASS_NAME")
+final packageName = await getPackageName();
+
+Dsbsdk.getSMSProtectorAPI().startMessageMonitoring(packageName, "FULL_PATH_TO_CLASS_NAME")
 .then((_) {
 })
 .catchError((error) {
@@ -942,4 +948,78 @@ Dsbsdk.getMalwareProtectorAPI()
 .setOverlayListener((overlappingApp) {
     print(overlappingApp);
 });
+```
+
+## Extras
+
+Here is some documentation on how to implement native Plugins for Android.
+
+## Register a Plugin in Android
+
+* Step 1: Create the Plugin in your Native code, here is an example in Kotlin:
+
+```kotlin
+import android.content.Context
+
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
+
+class CustomPlugin {
+
+    lateinit var context: Context
+    final val CUSTOM_CHANNEL = "mycustomchannel"
+
+    init {}
+
+    fun setUp(flutterEngine: FlutterEngine, context: Context) {
+        this.context = context
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CUSTOM_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "getPackageName" -> {
+                    getPackageName(result)
+                }
+                else -> {
+                    result.error("INVALID_METHOD", "The method called is invalid", null)
+                }
+            }
+        }
+    }
+
+    private fun getPackageName(result: MethodChannel.Result) {
+        val value: MutableList<String> = ArrayList(1)
+        val packageName = context?.applicationContext?.packageName ?: ""
+        value.add(packageName)
+        result.success(value)
+    }
+
+}
+```
+
+* Step 2: Register the Plugin in your Main Flutter Activity:
+
+```kotlin
+class MainActivity: FlutterActivity() {
+
+    private var customPlugin: CustomPlugin? = null
+
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+        customPlugin = CustomPlugin()
+        customPlugin?.setUp(flutterEngine, context)
+    }
+}
+```
+
+* Step 3: Create the Dart implementation to call the Plugin from your Flutter App.
+
+```dart
+MethodChannel channel = MethodChannel("mycustomchannel");
+
+Future getPackageName() {
+  return channel
+    .invokeListMethod("getPackageName")
+    .then((response) {
+      return Future.value(response.first ?? "");
+    }).catchError((error) => Future.value(""));
+}
 ```
