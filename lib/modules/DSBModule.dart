@@ -29,18 +29,6 @@ class DSBModule {
         .catchError((_) => {});
   }
 
-  Future getPackageName() {
-    return channel
-        .invokeListMethod(MethodNames.getPackageName.name)
-        .then((response) {
-      if (response != null && response.isNotEmpty) {
-        return Future.value(response.first);
-      } else {
-        return Future.error(SDKErrors.defaultError);
-      }
-    }).catchError((error) => Future.error(AppgateSDKError.toError(error)));
-  }
-
   Future getDeviceID() {
     return channel
         .invokeListMethod(MethodNames.getDeviceID.name)

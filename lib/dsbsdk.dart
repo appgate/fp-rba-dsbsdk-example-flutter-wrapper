@@ -29,10 +29,6 @@ class Dsbsdk {
     _instance._dsbModule.sendLoginData(args);
   }
 
-  static Future getPackageName() {
-    return Platform.isAndroid ? _instance._dsbModule.getPackageName() : Future.value("");
-  }
-
   static Future getDeviceID() {
     return _instance._dsbModule.getDeviceID();
   }

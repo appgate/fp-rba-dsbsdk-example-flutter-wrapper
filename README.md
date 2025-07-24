@@ -806,7 +806,7 @@ These errors are encapsulated by code in the table below:
 
 #### Example
 
-You will need to know your package name to use this feature. This is visible in the `app/build.gradle` of your application. To view more on how to implement the `getPackageName` method with a Native Plugin go to extra [section](#register-a-plugin-in-android).
+You will need to know your package name to use this feature. This is visible in the `app/build.gradle` of your application. To learn more about how to implement the `getPackageName` method with a native plugin, go to the [section](#register-a-plugin-in-android).
 
 ```dart
 import 'package:dsbsdk/dsbsdk.dart';
@@ -952,11 +952,11 @@ Dsbsdk.getMalwareProtectorAPI()
 
 ## Extras
 
-Here is some documentation on how to implement native Plugins for Android.
+Here is some documentation on how to implement native plugins for Android.
 
 ## Register a Plugin in Android
 
-* Step 1: Create the Plugin in your Native code, here is an example in Kotlin:
+* Step 1: Create the plugin in your native code. Here is an example in Kotlin:
 
 ```kotlin
 import android.content.Context
@@ -995,7 +995,7 @@ class CustomPlugin {
 }
 ```
 
-* Step 2: Register the Plugin in your Main Flutter Activity:
+* Step 2: Register the plugin in your main Flutter activity.
 
 ```kotlin
 class MainActivity: FlutterActivity() {
