@@ -167,7 +167,7 @@ Run `flutter doctor` and check that you have installed evertything.
 ### iOS
 
  - Base SDK compiled: iOS 18.4.
- - Version 16.3 (16E140).
+ - Xcode 16.3 (16E140).
  - OS versions compatibility: From 12 to 18.
  - Programing Language: Swift 6.1.
 
