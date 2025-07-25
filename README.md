@@ -11,12 +11,13 @@
 <!-- TOC -->
 * [Disclaimer](#disclaimer)
 * [Description](#description)
+* [Technical Information](#technical-information)
 * [DSB-SDK Integration](#dsb-sdk-integration)
   * [Preliminary Steps](#preliminary-steps)
   * [Software versions used to develop the library](#software-versions-used-to-develop-the-library)
-    * [Flutter](#flutter)
-    * [Android Studio](#android-studio)
-    * [Xcode](#xcode)
+    * [Flutter](#hybrid-environment)
+    * [iOS](#ios)
+    * [Android](#android)
 * [Set-up the library](#set-up-the-library)
   * [iOS](#ios)
     * [Install Cocoapods](#install-cocoapods)
@@ -25,6 +26,7 @@
     * [Copy aar to folders](#copy-aar-to-folders)
     * [Modify build.gradle](#modify-buildgradle)
     * [Additional configurations](#additional-configurations)
+    * [Add Proguard Rules](#add-proguard-rules)
 * [Implementing the DSB package](#implementing-the-dsb-package)
 * [Implementation](#implementation)
     * [Init with licence and domain](#init-with-licence-and-domain)
@@ -82,7 +84,7 @@
       * [Example](#example-12)
     * [Listen to Smishing Attacks](#listen-to-smishing-attacks)
       * [Example](#example-13)
-  * [Malware Protector API - Only Android](#malware-protector-api---only-android)
+  * [Malware Protector API - Only Android](#malware-protector-api---android-only)
     * [Additional configurations](#additional-configurations-1)
     * [Start Overlapping Protection](#startoverlappingprotection)
       * [Response](#response-13)
@@ -90,6 +92,8 @@
       * [Example](#example-14)
     * [setOverlayListener](#setoverlaylistener)
       * [Example](#example-15)
+  * [Extras](#extras)
+    * [Register a Plugin in Android](#register-a-plugin-in-android)
 <!-- TOC -->
 
 # Disclaimer
@@ -116,14 +120,21 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-<a name="desc"></a>
-
 # Description
-
 This repository is meant to help you understand the implementation of the native libraries of DSB-SDK using Flutter.
 This repository reviews the initialization of the SDK and the following APIs: DEVICE_PROTECTOR_API, CONNECTION_PROTECTOR_API and MALWARE_PROTECTOR_API services.
 
 Notice that all the methods of the SDK are accessed from the *Dsbsdk* class importing the package `package:dsbsdk/dsbsdk.dart`.
+
+# Technical Information
+The native libraries of DSB-SDK have the following specifications:
+
+## SDK version
+- iOS: 7.1.2
+    - dsb_protector_sdk_iOS.xcframework
+
+- Android: 7.1.6
+    - dsb_protector_sdk_v7.1.6_android_6.0.aar
 
 # DSB-SDK Integration
 
@@ -136,12 +147,8 @@ On this section, you can review step by step the integration of the SDK and its 
 ## Preliminary Steps
 
 1. Install Android Studio
-2. Install `Dart` and `Flutter` plugins for Android Studio:
-
-![dart_flutter_plugins.png](img/dart_flutter_plugins.png)
-
-3. [Download the Flutter SDK](https://docs.flutter.dev/get-started/install).
-4. Add Flutter to the PATH environment to enable the use of Flutter doctor:
+2. [Download the Flutter SDK](https://docs.flutter.dev/get-started/install).
+3. Add Flutter to the PATH environment to enable the use of Flutter doctor:
 
 ```bash
 export PATH="$PATH:`pwd`/your/path/to/flutter-sdk/bin"
@@ -151,22 +158,25 @@ Run `flutter doctor` and check that you have installed evertything.
 
 ## Software versions used to develop the library
 
-### Flutter 
-Flutter 3.29.2
+### Hybrid environment
 
-Tools • Dart 3.7.2 • DevTools 2.42.3
+- Flutter >= 3.32.5
+- Dart >= 3.8.1
+- DevTools 2.45.1
 
-### Android Studio
-Android Studio Meerkat | 2024.3.1 Patch 1
+### iOS
 
-Dart Plugin: 243.23654.44
+ - Base SDK compiled: iOS 18.4.
+ - Xcode 16.3 (16E140).
+ - OS versions compatibility: From 12 to 18.
+ - Programing Language: Swift 6.1.
 
-Flutter Plugin: 83.0.4
+## Android
 
-Java Compile: Java 17
-
-### Xcode
-16.2 
+ - API level SDK compiled: 34.
+ - API level version compatibility: From 23 (Android 6 - Marshmallow) to 35 (Android 15).
+ - Programing Language: Kotlin.
+ - Android Studio Narwhal | 2025.1.1
 
 # Set-up the library
 
@@ -210,9 +220,14 @@ Copy the required the `.aar` at the following locations:
 
 in your app go to app/build.gradle and dependencies block add this line
 
-```
+```groovy
 implementation fileTree(include: ['*.aar'], dir: 'libs')
 ```
+
+```kotlin
+implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar"))))
+```
+
 ### Additional configurations
 in the manifest add the permission
 ```xml
@@ -228,6 +243,22 @@ The `android.permission.HIGH_SAMPLING_RATE_SENSORS` permission allows an applica
 ```
 
 The `android.permission.INTERNET` permission allows an application to access the internet on the Android device.
+
+### Add Proguard Rules
+
+ProGuard optimizes, shrinks, and obfuscates Android app code. It removes unused classes, methods, and attributes, then shortens names to make reverse engineering harder—especially for apps with sensitive features like license checks. To ensure compatibility with the DetectID is required to add the following rules to `proguard-rules.pro` file.
+
+```
+-dontwarn net.easysol.dsb.**
+-dontwarn org.bouncycastle.easy.**
+-dontwarn net.easysol.logging.**
+-dontwarn com.google.errorprone.annotations.**
+-dontwarn androidx.annotation.**
+
+-keep class net.easysol.dsb.** {*;}
+-keep class net.easysol.logging.** {*;}
+-keep class org.bouncycastle.easy.** {*;}
+```
 
 # Implementing the DSB package
 
@@ -728,7 +759,7 @@ import 'package:dsbsdk/common/AppgateSDKError.dart';
 import 'package:dsbsdk/common/SDKErrors.dart';
 
 Dsbsdk.getSMSProtectorAPI().requestSMSPermissions()
-.then((_) {
+.then((_) async {
   // User has accepted the permissions.
 })
 .catchError((error) {
@@ -775,6 +806,8 @@ These errors are encapsulated by code in the table below:
 
 #### Example
 
+You will need to know your package name to use this feature. This is visible in the `app/build.gradle` of your application. To learn more about how to implement the `getPackageName` method with a native plugin, go to the [section](#register-a-plugin-in-android).
+
 ```dart
 import 'package:dsbsdk/dsbsdk.dart';
 import 'package:dsbsdk/common/AppgateSDKError.dart';
@@ -785,7 +818,9 @@ Dsbsdk.getSMSProtectorAPI().startMessageMonitoring()
 .catchError((_) {})
 
 // Registering a custom Broadcast Receiver
-Dsbsdk.getSMSProtectorAPI().startMessageMonitoring("YOUR_PACKAGE", "FULL_PATH_TO_CLASS_NAME")
+final packageName = await getPackageName();
+
+Dsbsdk.getSMSProtectorAPI().startMessageMonitoring(packageName, "FULL_PATH_TO_CLASS_NAME")
 .then((_) {
 })
 .catchError((error) {
@@ -913,4 +948,78 @@ Dsbsdk.getMalwareProtectorAPI()
 .setOverlayListener((overlappingApp) {
     print(overlappingApp);
 });
+```
+
+## Extras
+
+Here is some documentation on how to implement native plugins for Android.
+
+## Register a Plugin in Android
+
+* Step 1: Create the plugin in your native code. Here is an example in Kotlin:
+
+```kotlin
+import android.content.Context
+
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
+
+class CustomPlugin {
+
+    lateinit var context: Context
+    final val CUSTOM_CHANNEL = "mycustomchannel"
+
+    init {}
+
+    fun setUp(flutterEngine: FlutterEngine, context: Context) {
+        this.context = context
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CUSTOM_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "getPackageName" -> {
+                    getPackageName(result)
+                }
+                else -> {
+                    result.error("INVALID_METHOD", "The method called is invalid", null)
+                }
+            }
+        }
+    }
+
+    private fun getPackageName(result: MethodChannel.Result) {
+        val value: MutableList<String> = ArrayList(1)
+        val packageName = context?.applicationContext?.packageName ?: ""
+        value.add(packageName)
+        result.success(value)
+    }
+
+}
+```
+
+* Step 2: Register the plugin in your main Flutter activity.
+
+```kotlin
+class MainActivity: FlutterActivity() {
+
+    private var customPlugin: CustomPlugin? = null
+
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+        customPlugin = CustomPlugin()
+        customPlugin?.setUp(flutterEngine, context)
+    }
+}
+```
+
+* Step 3: Create the Dart implementation to call the Plugin from your Flutter App.
+
+```dart
+MethodChannel channel = MethodChannel("mycustomchannel");
+
+Future getPackageName() {
+  return channel
+    .invokeListMethod("getPackageName")
+    .then((response) {
+      return Future.value(response.first ?? "");
+    }).catchError((error) => Future.value(""));
+}
 ```
