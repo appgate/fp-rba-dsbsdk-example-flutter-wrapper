@@ -61,12 +61,18 @@ public class SwiftConnectionProtectorPlugin: NSObject, FlutterPlugin {
             return
         }
         DSB.sdk().connection_PROTECTOR_API.isSecureCertificate(url, onSuccess: { isSecure in
-            result([isSecure])
+            DispatchQueue.main.async(execute: {
+                result([isSecure])
+            })
         }, onFailure: { error in
             if let `error` = error {
-                result(FlutterError.init(code: "\(error.code)", message: error.description, details: nil))
+                DispatchQueue.main.async(execute: {
+                    result(FlutterError.init(code: "\(error.code)", message: error.description, details: nil))
+                })
             } else {
-                result(SDKErrors.defaultError)
+                DispatchQueue.main.async(execute: {
+                    result(SDKErrors.defaultError)
+                })
             }
         })
     }
