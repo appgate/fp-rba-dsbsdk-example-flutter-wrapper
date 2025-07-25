@@ -28,7 +28,6 @@ import com.appgate.dsbsdk.constants.DSBModulesNames.SET_OVERLAY_LISTENER
 import com.appgate.dsbsdk.constants.DSBModulesNames.SET_OVERLAY_TOAST_NOTIFICATION_ENABLE
 import com.appgate.dsbsdk.constants.DSBModulesNames.START_MESSAGE_MONITORING
 import com.appgate.dsbsdk.constants.DSBModulesNames.START_OVERLAPPING_PROTECTION
-import com.appgate.dsbsdk.util.DSBExceptionNumber.Companion.number
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -180,7 +179,7 @@ class DsbsdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
 
             override fun onFailure(exception: DSBException) {
                 Log.e(TAG, "onFailure: ", exception)
-                result.error("${exception.number()}", exception.message, exception.localizedMessage)
+                result.error("", exception.message, exception.localizedMessage)
             }
         }
         val domain = call.argument<String>(DOMAIN)
